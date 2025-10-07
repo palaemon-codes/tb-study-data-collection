@@ -266,107 +266,27 @@ def section_demographics():
             default=st.session_state.participant_data['Diagnostic_Tests']
         )
     
-    st.subheader("Delay Assessment Questions")
+    st.subheader("Essential Clinical Information")
     
     col5, col6 = st.columns(2)
     
     with col5:
-        # Patient delay reasons
-        patient_delay_reasons = [
-            'Did not recognize symptoms as serious',
-            'Financial constraints',
-            'Lack of awareness about TB',
-            'Fear of stigma related to TB',
-            'Unavailability of healthcare services',
-            'Other'
-        ]
-        st.session_state.participant_data['Patient_Delay_Reason'] = st.multiselect(
-            "What was the reason for delay in seeking care? (Select all applicable)",
-            options=patient_delay_reasons,
-            default=st.session_state.participant_data['Patient_Delay_Reason']
-        )
-        
-        # Provider awareness
-        st.session_state.participant_data['Provider_Awareness'] = st.selectbox(
-            "Was the healthcare provider aware of the severity of your symptoms at diagnosis?",
-            options=['', 'Yes', 'No'],
-            index=['', 'Yes', 'No'].index(st.session_state.participant_data['Provider_Awareness']) if st.session_state.participant_data['Provider_Awareness'] else 0
-        )
-        
-        # Provider explanation quality
-        st.session_state.participant_data['Provider_Explanation'] = st.selectbox(
-            "How would you rate the healthcare provider's explanation of your condition?",
-            options=['', 'Very clear', 'Somewhat clear', 'Not clear'],
-            index=['', 'Very clear', 'Somewhat clear', 'Not clear'].index(st.session_state.participant_data['Provider_Explanation']) if st.session_state.participant_data['Provider_Explanation'] else 0
-        )
-    
-    with col6:
-        # Treatment delay after diagnosis
-        st.session_state.participant_data['Treatment_Delay_Experienced'] = st.selectbox(
-            "Did you experience any delay after diagnosis before starting treatment?",
-            options=['', 'Yes', 'No'],
-            index=['', 'Yes', 'No'].index(st.session_state.participant_data['Treatment_Delay_Experienced']) if st.session_state.participant_data['Treatment_Delay_Experienced'] else 0
-        )
-        
-        # Treatment delay reasons
-        treatment_delay_reasons = [
-            'Waiting for reports',
-            'Financial reasons',
-            'Lack of awareness',
-            'No medicines available',
-            'Delay in test results',
-            'Delay in availability of medicines',
-            'Lack of awareness of treatment urgency',
-            'Other'
-        ]
-        st.session_state.participant_data['Treatment_Delay_Reason'] = st.multiselect(
-            "What caused delay in starting treatment? (If applicable)",
-            options=treatment_delay_reasons,
-            default=st.session_state.participant_data['Treatment_Delay_Reason']
-        )
-        
-        # Provider difficulties
-        st.session_state.participant_data['Provider_Difficulties'] = st.selectbox(
-            "Did you face difficulties accessing treatment due to provider-related reasons?",
-            options=['', 'Yes', 'No'],
-            index=['', 'Yes', 'No'].index(st.session_state.participant_data['Provider_Difficulties']) if st.session_state.participant_data['Provider_Difficulties'] else 0
-        )
-        
-        if st.session_state.participant_data['Provider_Difficulties'] == 'Yes':
-            provider_difficulty_options = [
-                'Unavailability of healthcare provider',
-                'Delay in diagnostic tests',
-                'Inadequate information provided',
-                'Lack of empathy and support',
-                'Other'
-            ]
-            st.session_state.participant_data['Provider_Difficulties_Details'] = st.multiselect(
-                "What were the specific challenges?",
-                options=provider_difficulty_options,
-                default=st.session_state.participant_data['Provider_Difficulties_Details']
-            )
-    
-    st.subheader("General Questions")
-    
-    col7, col8 = st.columns(2)
-    
-    with col7:
-        # Treatment satisfaction
-        st.session_state.participant_data['Treatment_Satisfaction'] = st.selectbox(
-            "Are you satisfied with the overall treatment and care received for TB?",
-            options=['', 'Yes', 'No'],
-            index=['', 'Yes', 'No'].index(st.session_state.participant_data['Treatment_Satisfaction']) if st.session_state.participant_data['Treatment_Satisfaction'] else 0
-        )
-        
-        # TB stigma
+        # TB Stigma - important for understanding delay patterns
         st.session_state.participant_data['TB_Stigma'] = st.selectbox(
             "Do you feel any stigma or discrimination regarding your TB diagnosis?",
             options=['', 'Yes', 'No'],
             index=['', 'Yes', 'No'].index(st.session_state.participant_data['TB_Stigma']) if st.session_state.participant_data['TB_Stigma'] else 0
         )
+        
+        # Treatment satisfaction - important for care quality assessment
+        st.session_state.participant_data['Treatment_Satisfaction'] = st.selectbox(
+            "Are you satisfied with the overall treatment and care received for TB?",
+            options=['', 'Yes', 'No'],
+            index=['', 'Yes', 'No'].index(st.session_state.participant_data['Treatment_Satisfaction']) if st.session_state.participant_data['Treatment_Satisfaction'] else 0
+        )
     
-    with col8:
-        # Family history
+    with col6:
+        # Family history - important for understanding TB patterns
         st.session_state.participant_data['Family_History'] = st.selectbox(
             "Any family history of TB?",
             options=['', 'Yes', 'No'],
@@ -378,20 +298,6 @@ def section_demographics():
                 "If yes, which year?",
                 value=st.session_state.participant_data['Family_History_Year']
             )
-        
-        # Additional support needed
-        support_options = [
-            'Awareness campaigns on TB',
-            'Financial assistance',
-            'Emotional or psychological support',
-            'Better healthcare access',
-            'Other'
-        ]
-        st.session_state.participant_data['Additional_Support_Needed'] = st.multiselect(
-            "What additional support would have helped you seek care earlier?",
-            options=support_options,
-            default=st.session_state.participant_data['Additional_Support_Needed']
-        )
 
 def section_digital_pathway():
     """Section 2: Digital Pathway Mapping with Critical Events."""
@@ -406,169 +312,178 @@ def section_digital_pathway():
         st.session_state.participant_data['Date_Symptom_Onset'] = st.date_input(
             "🤒 Date of Symptom Onset",
             value=st.session_state.participant_data['Date_Symptom_Onset'],
-            help="When did the patient first notice TB symptoms?"
+            help="When did the patient first notice TB symptoms?",
+            key="date_symptom_onset"
         )
         
         st.session_state.participant_data['Date_First_Visit'] = st.date_input(
             "🏥 Date of First Healthcare Visit",
             value=st.session_state.participant_data['Date_First_Visit'],
-            help="When did the patient first visit any healthcare provider for these symptoms?"
+            help="When did the patient first visit any healthcare provider for these symptoms?",
+            key="date_first_visit"
         )
     
     with col2:
         st.session_state.participant_data['Date_Diagnosis'] = st.date_input(
             "🔬 Date of TB Diagnosis Confirmation",
             value=st.session_state.participant_data['Date_Diagnosis'],
-            help="When was TB diagnosis confirmed through tests?"
+            help="When was TB diagnosis confirmed through tests?",
+            key="date_diagnosis"
         )
         
         st.session_state.participant_data['Date_Treatment_Start'] = st.date_input(
             "💊 Date of Treatment Initiation",
             value=st.session_state.participant_data['Date_Treatment_Start'],
-            help="When did the patient start Anti-TB treatment?"
+            help="When did the patient start Anti-TB treatment?",
+            key="date_treatment_start"
         )
     
-    st.subheader("Delay Calculation")
+    # Add delay reason dropdowns immediately after date inputs
+    st.subheader("🔍 Delay Reason Analysis")
+    st.write("Please specify the primary reason for delay in each phase:")
     
-    if st.button("🧮 Calculate Delays", type="primary"):
+    col_reason1, col_reason2, col_reason3 = st.columns(3)
+    
+    with col_reason1:
+        st.write("**Patient Delay Reason**")
+        st.write("*Gap: Symptom onset → First visit*")
+        
+        patient_delay_options = [
+            '',
+            'Did not recognize symptoms as serious',
+            'Financial constraints',
+            'Lack of awareness about TB',
+            'Fear of stigma related to TB',
+            'Unavailability of healthcare services',
+            'Transportation issues',
+            'Work/family commitments',
+            'Self-medication attempts',
+            'Other'
+        ]
+        
+        st.session_state.participant_data['Patient_Delay_Specific_Reason'] = st.selectbox(
+            "Primary reason for patient delay:",
+            options=patient_delay_options,
+            index=patient_delay_options.index(st.session_state.participant_data['Patient_Delay_Specific_Reason']) if st.session_state.participant_data['Patient_Delay_Specific_Reason'] in patient_delay_options else 0,
+            key="patient_delay_reason"
+        )
+    
+    with col_reason2:
+        st.write("**Provider Delay Reason**")
+        st.write("*Gap: First visit → Diagnosis*")
+        
+        provider_delay_options = [
+            '',
+            'Delay in diagnostic tests',
+            'Waiting for test results',
+            'Misdiagnosis/incorrect initial diagnosis',
+            'Unavailability of healthcare provider',
+            'Inadequate clinical assessment',
+            'Referral delays between facilities',
+            'Equipment/facility unavailability',
+            'Administrative delays',
+            'Other'
+        ]
+        
+        st.session_state.participant_data['Provider_Delay_Specific_Reason'] = st.selectbox(
+            "Primary reason for provider delay:",
+            options=provider_delay_options,
+            index=provider_delay_options.index(st.session_state.participant_data['Provider_Delay_Specific_Reason']) if st.session_state.participant_data['Provider_Delay_Specific_Reason'] in provider_delay_options else 0,
+            key="provider_delay_reason"
+        )
+    
+    with col_reason3:
+        st.write("**Treatment Delay Reason**")
+        st.write("*Gap: Diagnosis → Treatment start*")
+        
+        treatment_delay_options = [
+            '',
+            'Delay in availability of medicines',
+            'Waiting for additional test results',
+            'Financial reasons',
+            'Patient counseling and preparation',
+            'Administrative/paperwork delays',
+            'Referral to specialized center',
+            'Patient readiness/consent issues',
+            'Lack of awareness of treatment urgency',
+            'Other'
+        ]
+        
+        st.session_state.participant_data['Treatment_Delay_Specific_Reason'] = st.selectbox(
+            "Primary reason for treatment delay:",
+            options=treatment_delay_options,
+            index=treatment_delay_options.index(st.session_state.participant_data['Treatment_Delay_Specific_Reason']) if st.session_state.participant_data['Treatment_Delay_Specific_Reason'] in treatment_delay_options else 0,
+            key="treatment_delay_reason"
+        )
+    
+    st.subheader("Delay Calculation & Summary")
+    
+    # Automatically calculate delays when dates are available
+    if all([st.session_state.participant_data['Date_Symptom_Onset'], 
+            st.session_state.participant_data['Date_First_Visit'],
+            st.session_state.participant_data['Date_Diagnosis'], 
+            st.session_state.participant_data['Date_Treatment_Start']]):
+        
         # Validate dates first
         is_valid, message = validate_dates()
         
         if not is_valid:
             st.error(message)
         else:
-            if calculate_delays():
-                st.success("✅ Delays calculated successfully!")
-                
-                # Display calculated delays
-                col1, col2, col3, col4 = st.columns(4)
-                
-                with col1:
-                    st.metric(
-                        "Patient Delay",
-                        f"{st.session_state.participant_data['Delay_Patient']} days",
-                        help="Time from symptom onset to first healthcare visit"
-                    )
-                
-                with col2:
-                    st.metric(
-                        "Provider Delay",
-                        f"{st.session_state.participant_data['Delay_Provider']} days",
-                        help="Time from first visit to diagnosis confirmation"
-                    )
-                
-                with col3:
-                    st.metric(
-                        "Treatment Delay",
-                        f"{st.session_state.participant_data['Delay_Treatment']} days",
-                        help="Time from diagnosis to treatment start"
-                    )
-                
-                with col4:
-                    st.metric(
-                        "Total Delay",
-                        f"{st.session_state.participant_data['Delay_Total']} days",
-                        help="Total time from symptom onset to treatment start"
-                    )
-                
-                # Add delay reason dropdowns for each gap
-                st.subheader("🔍 Delay Reason Analysis")
-                st.write("Please specify the primary reason for delay in each phase:")
-                
-                col_reason1, col_reason2, col_reason3 = st.columns(3)
-                
-                with col_reason1:
-                    st.write("**Patient Delay Reason**")
-                    st.write(f"*Gap: Symptom onset → First visit ({st.session_state.participant_data['Delay_Patient']} days)*")
-                    
-                    patient_delay_options = [
-                        '',
-                        'Did not recognize symptoms as serious',
-                        'Financial constraints',
-                        'Lack of awareness about TB',
-                        'Fear of stigma related to TB',
-                        'Unavailability of healthcare services',
-                        'Transportation issues',
-                        'Work/family commitments',
-                        'Self-medication attempts',
-                        'Other'
-                    ]
-                    
-                    st.session_state.participant_data['Patient_Delay_Specific_Reason'] = st.selectbox(
-                        "Primary reason for patient delay:",
-                        options=patient_delay_options,
-                        index=patient_delay_options.index(st.session_state.participant_data['Patient_Delay_Specific_Reason']) if st.session_state.participant_data['Patient_Delay_Specific_Reason'] in patient_delay_options else 0,
-                        key="patient_delay_reason"
-                    )
-                
-                with col_reason2:
-                    st.write("**Provider Delay Reason**")
-                    st.write(f"*Gap: First visit → Diagnosis ({st.session_state.participant_data['Delay_Provider']} days)*")
-                    
-                    provider_delay_options = [
-                        '',
-                        'Delay in diagnostic tests',
-                        'Waiting for test results',
-                        'Misdiagnosis/incorrect initial diagnosis',
-                        'Unavailability of healthcare provider',
-                        'Inadequate clinical assessment',
-                        'Referral delays between facilities',
-                        'Equipment/facility unavailability',
-                        'Administrative delays',
-                        'Other'
-                    ]
-                    
-                    st.session_state.participant_data['Provider_Delay_Specific_Reason'] = st.selectbox(
-                        "Primary reason for provider delay:",
-                        options=provider_delay_options,
-                        index=provider_delay_options.index(st.session_state.participant_data['Provider_Delay_Specific_Reason']) if st.session_state.participant_data['Provider_Delay_Specific_Reason'] in provider_delay_options else 0,
-                        key="provider_delay_reason"
-                    )
-                
-                with col_reason3:
-                    st.write("**Treatment Delay Reason**")
-                    st.write(f"*Gap: Diagnosis → Treatment start ({st.session_state.participant_data['Delay_Treatment']} days)*")
-                    
-                    treatment_delay_options = [
-                        '',
-                        'Delay in availability of medicines',
-                        'Waiting for additional test results',
-                        'Financial reasons',
-                        'Patient counseling and preparation',
-                        'Administrative/paperwork delays',
-                        'Referral to specialized center',
-                        'Patient readiness/consent issues',
-                        'Lack of awareness of treatment urgency',
-                        'Other'
-                    ]
-                    
-                    st.session_state.participant_data['Treatment_Delay_Specific_Reason'] = st.selectbox(
-                        "Primary reason for treatment delay:",
-                        options=treatment_delay_options,
-                        index=treatment_delay_options.index(st.session_state.participant_data['Treatment_Delay_Specific_Reason']) if st.session_state.participant_data['Treatment_Delay_Specific_Reason'] in treatment_delay_options else 0,
-                        key="treatment_delay_reason"
-                    )
-                
-                # Visual indicator for delay reasons
-                st.subheader("📊 Delay Summary")
-                delay_summary_data = {
-                    'Phase': ['Patient Phase', 'Provider Phase', 'Treatment Phase'],
-                    'Days': [st.session_state.participant_data['Delay_Patient'], 
-                            st.session_state.participant_data['Delay_Provider'], 
-                            st.session_state.participant_data['Delay_Treatment']],
-                    'Primary Reason': [
-                        st.session_state.participant_data['Patient_Delay_Specific_Reason'] or 'Not specified',
-                        st.session_state.participant_data['Provider_Delay_Specific_Reason'] or 'Not specified',
-                        st.session_state.participant_data['Treatment_Delay_Specific_Reason'] or 'Not specified'
-                    ]
-                }
-                
-                import pandas as pd
-                delay_df = pd.DataFrame(delay_summary_data)
-                st.dataframe(delay_df, use_container_width=True, hide_index=True)
-                
-            else:
-                st.warning("⚠️ Please enter all four dates to calculate delays.")
+            # Calculate delays automatically
+            calculate_delays()
+            
+            # Display calculated delays
+            col1, col2, col3, col4 = st.columns(4)
+            
+            with col1:
+                st.metric(
+                    "Patient Delay",
+                    f"{st.session_state.participant_data['Delay_Patient']} days",
+                    help="Time from symptom onset to first healthcare visit"
+                )
+            
+            with col2:
+                st.metric(
+                    "Provider Delay",
+                    f"{st.session_state.participant_data['Delay_Provider']} days",
+                    help="Time from first visit to diagnosis confirmation"
+                )
+            
+            with col3:
+                st.metric(
+                    "Treatment Delay",
+                    f"{st.session_state.participant_data['Delay_Treatment']} days",
+                    help="Time from diagnosis to treatment start"
+                )
+            
+            with col4:
+                st.metric(
+                    "Total Delay",
+                    f"{st.session_state.participant_data['Delay_Total']} days",
+                    help="Total time from symptom onset to treatment start"
+                )
+            
+            # Visual delay summary
+            st.subheader("📊 Delay Summary")
+            delay_summary_data = {
+                'Phase': ['Patient Phase', 'Provider Phase', 'Treatment Phase'],
+                'Days': [st.session_state.participant_data['Delay_Patient'], 
+                        st.session_state.participant_data['Delay_Provider'], 
+                        st.session_state.participant_data['Delay_Treatment']],
+                'Primary Reason': [
+                    st.session_state.participant_data['Patient_Delay_Specific_Reason'] or 'Not specified',
+                    st.session_state.participant_data['Provider_Delay_Specific_Reason'] or 'Not specified',
+                    st.session_state.participant_data['Treatment_Delay_Specific_Reason'] or 'Not specified'
+                ]
+            }
+            
+            import pandas as pd
+            delay_df = pd.DataFrame(delay_summary_data)
+            st.dataframe(delay_df, use_container_width=True, hide_index=True)
+    
+    else:
+        st.info("⏳ Please enter all four dates above to automatically calculate delays and view summary.")
 
 def section_visualization():
     """Section 4: Real-time Delay Visualization."""
