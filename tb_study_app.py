@@ -21,6 +21,8 @@ import plotly.express as px
 import plotly.graph_objects as go
 from datetime import datetime, timedelta
 import uuid
+import random
+import random
 
 # Page configuration
 st.set_page_config(
@@ -58,11 +60,15 @@ def initialize_session_state():
             'Date_Diagnosis': None,
             'Date_Treatment_Start': None,
             
-            # Calculated Delays
-            'Delay_Patient': 0.0,
-            'Delay_Provider': 0.0,
-            'Delay_Treatment': 0.0,
-            'Delay_Total': 0.0,
+            # Calculated Delays (New Classification)
+            # Delay calculations
+            'Patient_Delay': 0.0,
+            'Healthcare_Provider_Related_Delay': 0.0,
+            'Treatment_Delay': 0.0,
+            'Total_Delay': 0.0,
+            'TB_Unit_TU': 0.0,
+            'Healthcare_Providers': 0.0,
+            'No_Delay': False,
             
             # Specific Delay Reasons for Each Gap
             'Patient_Delay_Specific_Reason': '',
@@ -122,16 +128,21 @@ def calculate_delays():
     # Calculate delays if all dates are available
     if all([symptom_date, first_visit_date, diagnosis_date, treatment_date]):
         # Patient delay: Symptom onset to first healthcare visit
-        data['Delay_Patient'] = (first_visit_date - symptom_date).days
+        data['Patient_Delay'] = (first_visit_date - symptom_date).days
         
-        # Provider delay: First visit to diagnosis confirmation
-        data['Delay_Provider'] = (diagnosis_date - first_visit_date).days
+        # Healthcare Provider-related delay: First visit to diagnosis confirmation
+        data['Healthcare_Provider_Related_Delay'] = (diagnosis_date - first_visit_date).days
         
         # Treatment delay: Diagnosis to treatment start
-        data['Delay_Treatment'] = (treatment_date - diagnosis_date).days
+        data['Treatment_Delay'] = (treatment_date - diagnosis_date).days
         
         # Total delay: Symptom onset to treatment start
-        data['Delay_Total'] = (treatment_date - symptom_date).days
+        data['Total_Delay'] = (treatment_date - symptom_date).days
+        
+        # Set other delay types
+        data['TB_Unit_TU'] = data['Healthcare_Provider_Related_Delay']  # TB Unit delay
+        data['Healthcare_Providers'] = data['Healthcare_Provider_Related_Delay']  # Healthcare Providers delay
+        data['No_Delay'] = (data['Total_Delay'] == 0)
         
         return True
     return False
@@ -159,6 +170,142 @@ def validate_dates():
             return False, f"Date sequence error: {date_names[i]} cannot be after {date_names[i + 1]}"
     
     return True, "Dates are valid"
+
+def generate_sample_data():
+    """Generate fabricated sample data for 30 patients for demo purposes."""
+    random.seed(42)  # For reproducible results
+    np.random.seed(42)
+    
+    sample_data = []
+    
+    # Demographics data pools
+    names = [f"Patient_{i+1:03d}" for i in range(30)]
+    genders = ['Male', 'Female']
+    education_levels = ['No formal education', 'Primary school', 'Secondary school', 'Higher secondary', 'Graduate', 'Postgraduate']
+    occupations = ['Unemployed', 'Manual laborer', 'Skilled worker', 'Clerical', 'Professional', 'Business', 'Student', 'Homemaker']
+    income_levels = ['< ₹10,000', '₹10,000 - ₹25,000', '₹25,000 - ₹50,000', '₹50,000 - ₹75,000', '> ₹75,000']
+    locations = ['Urban', 'Semi-urban', 'Rural']
+    tb_types = ['Pulmonary TB', 'Extra-pulmonary TB']
+    
+    # Delay reasons
+    patient_delay_reasons = [
+        'Financial constraints', 'Lack of awareness about symptoms', 
+        'Self-medication attempts', 'Fear of stigma', 'Distance to healthcare facility',
+        'Work commitments', 'Family responsibilities'
+    ]
+    
+    provider_delay_reasons = [
+        'Misdiagnosis as other condition', 'Inadequate diagnostic facilities',
+        'Delayed test results', 'Multiple consultations required',
+        'Referral delays', 'Staff shortage', 'Equipment breakdown'
+    ]
+    
+    treatment_delay_reasons = [
+        'Drug availability issues', 'Patient counseling delays',
+        'Administrative procedures', 'Bed availability',
+        'Comorbidity management', 'Contact tracing', 'Insurance processing'
+    ]
+    
+    for i in range(30):
+        # Generate base date (symptom onset) - random date in last 6 months
+        base_date = datetime(2024, 4, 1) + timedelta(days=random.randint(0, 180))
+        
+        # Generate delays (in days)
+        patient_delay = random.randint(1, 90)
+        provider_delay = random.randint(1, 60) 
+        treatment_delay = random.randint(1, 30)
+        
+        # Calculate dates based on delays
+        first_visit_date = base_date + timedelta(days=patient_delay)
+        diagnosis_date = first_visit_date + timedelta(days=provider_delay)
+        treatment_date = diagnosis_date + timedelta(days=treatment_delay)
+        
+        # Generate patient data to match export structure
+        patient = {
+            # Core identifiers
+            'Participant_ID': f'TB{i+1:03d}',
+            'Name_Initials': names[i],
+            'Data_Collection_Date': datetime.now().strftime('%Y-%m-%d'),
+            
+            # Demographics
+            'Age': random.randint(18, 80),
+            'Gender': random.choice(genders),
+            'Address': f"Address {i+1}, Chennai",
+            'Occupation': random.choice(occupations),
+            'Education': random.choice(education_levels),
+            'Monthly_Income': random.choice(income_levels),
+            'Marital_Status': random.choice(['Single', 'Married', 'Divorced', 'Widowed']),
+            'Residence_Type': random.choice(locations),
+            'Comorbidities': random.choice(['None', 'Diabetes', 'Hypertension', 'HIV', 'Other']),
+            'Comorbidities_Details': '',
+            'TB_Type': random.choice(tb_types),
+            'Addictive_Substances': random.choice(['None', 'Tobacco', 'Alcohol', 'Other']),
+            'Addictive_Substances_Details': '',
+            
+            # Critical dates
+            'Date_Symptom_Onset': base_date.strftime('%Y-%m-%d'),
+            'Date_First_Visit': first_visit_date.strftime('%Y-%m-%d'),
+            'Date_Diagnosis': diagnosis_date.strftime('%Y-%m-%d'),
+            'Date_Treatment_Start': treatment_date.strftime('%Y-%m-%d'),
+            
+            # Calculated delays
+            'Patient_Delay': patient_delay,
+            'Healthcare_Provider_Related_Delay': provider_delay,
+            'Treatment_Delay': treatment_delay,
+            'Total_Delay': patient_delay + provider_delay + treatment_delay,
+            'TB_Unit_TU': provider_delay,
+            'Healthcare_Providers': provider_delay,
+            'No_Delay': (patient_delay + provider_delay + treatment_delay == 0),
+            
+            # Specific delay reasons
+            'Patient_Delay_Specific_Reason': random.choice(patient_delay_reasons),
+            'Provider_Delay_Specific_Reason': random.choice(provider_delay_reasons),
+            'Treatment_Delay_Specific_Reason': random.choice(treatment_delay_reasons),
+            
+            # Questionnaire responses (empty for sample data)
+            'Symptoms_Nature': '',
+            'First_Care_Location': '',
+            'Patient_Delay_Reason': '',
+            'Healthcare_Visits_Count': random.randint(1, 5),
+            'Diagnostic_Tests': '',
+            'Treatment_Delay_Experienced': '',
+            'Treatment_Delay_Reason': '',
+            'Provider_Awareness': '',
+            'Provider_Explanation': '',
+            'Provider_Difficulties': '',
+            'Provider_Difficulties_Details': '',
+            'Treatment_Satisfaction': '',
+            'TB_Stigma': '',
+            'Family_History': '',
+            'Family_History_Year': '',
+            'Additional_Support_Needed': '',
+            
+            # eHEALS Assessment
+            'eHEALS_Q1': random.randint(1, 5),
+            'eHEALS_Q2': random.randint(1, 5),
+            'eHEALS_Q3': random.randint(1, 5),
+            'eHEALS_Q4': random.randint(1, 5),
+            'eHEALS_Q5': random.randint(1, 5),
+            'eHEALS_Q6': random.randint(1, 5),
+            'eHEALS_Q7': random.randint(1, 5),
+            'eHEALS_Q8': random.randint(1, 5),
+            'eHEALS_Q9': random.randint(1, 5),
+            'eHEALS_Q10': random.randint(1, 5),
+            'eHEALS_Total_Score': 0,  # Will be calculated
+            
+            # Verification
+            'Data_Verified': random.choice([True, False]),
+            'Verification_Notes': f'Sample patient {i+1} - fabricated data for demo'
+        }
+        
+        # Calculate eHEALS total score
+        patient['eHEALS_Total_Score'] = sum([patient[f'eHEALS_Q{j}'] for j in range(3, 11)])
+        
+
+        
+        sample_data.append(patient)
+    
+    return pd.DataFrame(sample_data)
 
 def section_demographics():
     """Section 1: Demographics and Key Clinical Questions."""
@@ -225,79 +372,11 @@ def section_demographics():
         
         st.session_state.participant_data['Monthly_Income'] = st.selectbox(
             "Monthly Household Income",
-            options=['', 'Above poverty line', 'Below poverty line'],
-            index=['', 'Above poverty line', 'Below poverty line'].index(st.session_state.participant_data['Monthly_Income']) if st.session_state.participant_data['Monthly_Income'] else 0
+            options=['', '< ₹10,000', '₹10,000 - ₹25,000', '₹25,000 - ₹50,000', '₹50,000 - ₹75,000', '> ₹75,000'],
+            index=['', '< ₹10,000', '₹10,000 - ₹25,000', '₹25,000 - ₹50,000', '₹50,000 - ₹75,000', '> ₹75,000'].index(st.session_state.participant_data['Monthly_Income']) if st.session_state.participant_data['Monthly_Income'] else 0
         )
     
-    st.subheader("Key Clinical Information")
-    
-    col3, col4 = st.columns(2)
-    
-    with col3:
-        # Symptoms
-        symptoms_options = ['Fever', 'Cough (>2 weeks)', 'Cough with blood', 'Chills', 'Night sweats', 
-                           'Weight loss', 'Weakness/Fatigue', 'Loss of appetite', 'Chest pain', 'Breathlessness']
-        st.session_state.participant_data['Symptoms_Nature'] = st.multiselect(
-            "Nature of Symptoms (Select all applicable)",
-            options=symptoms_options,
-            default=st.session_state.participant_data['Symptoms_Nature']
-        )
-        
-        st.session_state.participant_data['First_Care_Location'] = st.selectbox(
-            "Where did you first seek care?",
-            options=['', 'Government hospital', 'Private hospital', 'Private clinic', 'Primary health centre/CHC', 
-                    'Pharmacy', 'Home remedies/Self medication', 'Homeopathy clinic', 'Other'],
-            index=['', 'Government hospital', 'Private hospital', 'Private clinic', 'Primary health centre/CHC', 
-                   'Pharmacy', 'Home remedies/Self medication', 'Homeopathy clinic', 'Other'].index(st.session_state.participant_data['First_Care_Location']) if st.session_state.participant_data['First_Care_Location'] else 0
-        )
-    
-    with col4:
-        st.session_state.participant_data['Healthcare_Visits_Count'] = st.number_input(
-            "Number of healthcare visits before TB diagnosis",
-            min_value=0,
-            max_value=50,
-            value=st.session_state.participant_data['Healthcare_Visits_Count']
-        )
-        
-        diagnostic_tests = ['Sputum smear', 'GeneXpert', 'CB NAAT', 'Chest X-ray', 'Other']
-        st.session_state.participant_data['Diagnostic_Tests'] = st.multiselect(
-            "What tests were done for diagnosis?",
-            options=diagnostic_tests,
-            default=st.session_state.participant_data['Diagnostic_Tests']
-        )
-    
-    st.subheader("Essential Clinical Information")
-    
-    col5, col6 = st.columns(2)
-    
-    with col5:
-        # TB Stigma - important for understanding delay patterns
-        st.session_state.participant_data['TB_Stigma'] = st.selectbox(
-            "Do you feel any stigma or discrimination regarding your TB diagnosis?",
-            options=['', 'Yes', 'No'],
-            index=['', 'Yes', 'No'].index(st.session_state.participant_data['TB_Stigma']) if st.session_state.participant_data['TB_Stigma'] else 0
-        )
-        
-        # Treatment satisfaction - important for care quality assessment
-        st.session_state.participant_data['Treatment_Satisfaction'] = st.selectbox(
-            "Are you satisfied with the overall treatment and care received for TB?",
-            options=['', 'Yes', 'No'],
-            index=['', 'Yes', 'No'].index(st.session_state.participant_data['Treatment_Satisfaction']) if st.session_state.participant_data['Treatment_Satisfaction'] else 0
-        )
-    
-    with col6:
-        # Family history - important for understanding TB patterns
-        st.session_state.participant_data['Family_History'] = st.selectbox(
-            "Any family history of TB?",
-            options=['', 'Yes', 'No'],
-            index=['', 'Yes', 'No'].index(st.session_state.participant_data['Family_History']) if st.session_state.participant_data['Family_History'] else 0
-        )
-        
-        if st.session_state.participant_data['Family_History'] == 'Yes':
-            st.session_state.participant_data['Family_History_Year'] = st.text_input(
-                "If yes, which year?",
-                value=st.session_state.participant_data['Family_History_Year']
-            )
+
 
 def section_digital_pathway():
     """Section 2: Digital Pathway Mapping with Critical Events."""
@@ -439,38 +518,38 @@ def section_digital_pathway():
             with col1:
                 st.metric(
                     "Patient Delay",
-                    f"{st.session_state.participant_data['Delay_Patient']} days",
+                    f"{st.session_state.participant_data['Patient_Delay']} days",
                     help="Time from symptom onset to first healthcare visit"
                 )
             
             with col2:
                 st.metric(
-                    "Provider Delay",
-                    f"{st.session_state.participant_data['Delay_Provider']} days",
+                    "Healthcare Provider Delay",
+                    f"{st.session_state.participant_data['Healthcare_Provider_Related_Delay']} days",
                     help="Time from first visit to diagnosis confirmation"
                 )
             
             with col3:
                 st.metric(
                     "Treatment Delay",
-                    f"{st.session_state.participant_data['Delay_Treatment']} days",
+                    f"{st.session_state.participant_data['Treatment_Delay']} days",
                     help="Time from diagnosis to treatment start"
                 )
             
             with col4:
                 st.metric(
                     "Total Delay",
-                    f"{st.session_state.participant_data['Delay_Total']} days",
+                    f"{st.session_state.participant_data['Total_Delay']} days",
                     help="Total time from symptom onset to treatment start"
                 )
             
             # Visual delay summary
             st.subheader("📊 Delay Summary")
             delay_summary_data = {
-                'Phase': ['Patient Phase', 'Provider Phase', 'Treatment Phase'],
-                'Days': [st.session_state.participant_data['Delay_Patient'], 
-                        st.session_state.participant_data['Delay_Provider'], 
-                        st.session_state.participant_data['Delay_Treatment']],
+                'Phase': ['Patient Phase', 'Healthcare Provider Phase', 'Treatment Phase'],
+                'Days': [st.session_state.participant_data['Patient_Delay'], 
+                        st.session_state.participant_data['Healthcare_Provider_Related_Delay'], 
+                        st.session_state.participant_data['Treatment_Delay']],
                 'Primary Reason': [
                     st.session_state.participant_data['Patient_Delay_Specific_Reason'] or 'Not specified',
                     st.session_state.participant_data['Provider_Delay_Specific_Reason'] or 'Not specified',
@@ -485,194 +564,257 @@ def section_digital_pathway():
     else:
         st.info("⏳ Please enter all four dates above to automatically calculate delays and view summary.")
 
-def section_visualization():
-    """Section 4: Real-time Delay Visualization."""
-    st.header("📊 Section 4: Real-time Delay Visualization")
+def create_gantt_chart():
+    """Create a Gantt chart showing patient timelines."""
+    sample_df = generate_sample_data()
     
-    data = st.session_state.participant_data
+    # Prepare data for Gantt chart - only show first 8 patients for clarity
+    gantt_data = []
     
-    # Check if delays have been calculated
-    if data['Delay_Total'] > 0:
-        # Create horizontal bar chart
-        delays = {
-            'Patient Delay': data['Delay_Patient'],
-            'Provider Delay': data['Delay_Provider'],
-            'Treatment Delay': data['Delay_Treatment']
-        }
+    for idx, row in sample_df.head(8).iterrows():
+        participant_id = row['Participant_ID']
+        tb_type = row['TB_Type']
         
-        # Create Plotly figure
-        fig = go.Figure()
+        # Convert dates
+        symptom_date = pd.to_datetime(row['Date_Symptom_Onset'])
+        first_visit_date = pd.to_datetime(row['Date_First_Visit'])
+        diagnosis_date = pd.to_datetime(row['Date_Diagnosis'])
+        treatment_date = pd.to_datetime(row['Date_Treatment_Start'])
         
-        colors = ['#FF6B6B', '#4ECDC4', '#45B7D1']
+        # Pre-visit phase (symptoms to first visit)
+        gantt_data.append(dict(
+            Task=participant_id,
+            Start=symptom_date,
+            Finish=first_visit_date,
+            Resource=f"{tb_type}, Pre-visit"
+        ))
         
-        for i, (delay_type, days) in enumerate(delays.items()):
-            fig.add_trace(go.Bar(
-                y=[delay_type],
-                x=[days],
-                orientation='h',
-                name=delay_type,
-                marker_color=colors[i],
-                text=[f'{days} days'],
-                textposition='inside',
-                textfont=dict(color='white', size=14)
-            ))
+        # Diagnosis phase (first visit to diagnosis)
+        gantt_data.append(dict(
+            Task=participant_id,
+            Start=first_visit_date,
+            Finish=diagnosis_date,
+            Resource=f"{tb_type}, Diagnosis"
+        ))
         
-        fig.update_layout(
-            title=f'TB Care Delays Timeline - Participant {data["Participant_ID"]}',
-            xaxis_title='Days',
-            yaxis_title='Delay Type',
-            showlegend=False,
-            height=300,
-            font=dict(size=12)
+        # Pre-treatment phase (diagnosis to treatment)
+        gantt_data.append(dict(
+            Task=participant_id,
+            Start=diagnosis_date,
+            Finish=treatment_date,
+            Resource=f"{tb_type}, Pre-treatment"
+        ))
+    
+    gantt_df = pd.DataFrame(gantt_data)
+    
+    # Create color mapping for different TB types and stages
+    color_map = {
+        'Pulmonary TB, Pre-visit': '#1f77b4',
+        'Pulmonary TB, Diagnosis': '#aec7e8',
+        'Pulmonary TB, Pre-treatment': '#c5dbf7',
+        'Extra-pulmonary TB, Pre-visit': '#2ca02c',
+        'Extra-pulmonary TB, Diagnosis': '#98df8a',
+        'Extra-pulmonary TB, Pre-treatment': '#c4e6c0'
+    }
+    
+    # Create Gantt chart
+    fig = px.timeline(
+        gantt_df,
+        x_start="Start",
+        x_end="Finish",
+        y="Task",
+        color="Resource",
+        color_discrete_map=color_map,
+        title="TB Patient Care Timelines"
+    )
+    
+    fig.update_layout(
+        height=600,
+        xaxis_title="Date",
+        yaxis_title="Patient ID",
+        showlegend=True,
+        legend=dict(
+            orientation="h",
+            yanchor="top",
+            y=-0.1,
+            xanchor="left",
+            x=0
         )
+    )
+    
+    return fig
+
+def section_visualization():
+    """Section 4: Real-time Delay Visualization with Data Analytics."""
+    st.header("📊 Section 4: Data Visualization & Analytics")
+    
+    # Tab structure for different visualizations
+    tab1, tab2, tab3 = st.tabs(["Current Patient", "Gantt Chart", "Data Analytics"])
+    
+    with tab1:
+        st.subheader("Current Patient Delay Analysis")
+        data = st.session_state.participant_data
         
-        st.plotly_chart(fig, use_container_width=True)
+        # Check if delays have been calculated
+        if data['Total_Delay'] > 0:
+            # Create horizontal bar chart
+            delays = {
+                'Patient Delay': data['Patient_Delay'],
+                'Healthcare Provider-related Delay': data['Healthcare_Provider_Related_Delay'],
+                'Treatment Delay': data['Treatment_Delay']
+            }
+            
+            # Create Plotly figure
+            fig = go.Figure()
+            
+            colors = ['#FF6B6B', '#4ECDC4', '#45B7D1']
+            
+            for i, (delay_type, days) in enumerate(delays.items()):
+                fig.add_trace(go.Bar(
+                    x=[days],
+                    y=[delay_type],
+                    orientation='h',
+                    marker_color=colors[i],
+                    text=[f'{days} days'],
+                    textposition='auto',
+                    name=delay_type
+                ))
+            
+            fig.update_layout(
+                title=f'TB Care Delays Timeline - Participant {data["Participant_ID"]}',
+                xaxis_title='Days',
+                yaxis_title='Delay Type',
+                showlegend=False,
+                height=300,
+                font=dict(size=12)
+            )
+            
+            st.plotly_chart(fig, use_container_width=True)
+            
+            # Additional insights
+            st.subheader("📈 Delay Analysis")
+            
+            col1, col2 = st.columns(2)
+            
+            with col1:
+                st.metric("Total Delay", f"{data['Total_Delay']} days")
+                st.metric("Patient Delay", f"{data['Patient_Delay']} days")
+                st.metric("Provider Delay", f"{data['Healthcare_Provider_Related_Delay']} days")
+            
+            with col2:
+                st.metric("Treatment Delay", f"{data['Treatment_Delay']} days")
+                
+                # Determine delay category
+                total_days = data['Total_Delay']
+                if total_days <= 30:
+                    category = "Low Delay"
+                    color = "green"
+                elif total_days <= 60:
+                    category = "Moderate Delay"
+                    color = "orange"
+                else:
+                    category = "High Delay"
+                    color = "red"
+                
+                st.markdown(f"**Delay Category:** :{color}[{category}]")
         
-        # Additional insights
-        st.subheader("📈 Delay Analysis")
+        else:
+            st.info("⏳ Please complete Section 2 (Digital Pathway Mapping) to view delay analysis.")
+    
+    with tab2:
+        st.subheader("Patient Care Timeline - Gantt Chart")
+        st.write("Visual representation of TB patient care timelines across different phases")
+        
+        gantt_fig = create_gantt_chart()
+        st.plotly_chart(gantt_fig, use_container_width=True)
+    
+    with tab3:
+        st.subheader("Data Analytics Dashboard")
+        sample_df = generate_sample_data()
+        
+        # Descriptive Statistics
+        st.write("### Descriptive Statistics")
+        
+        col1, col2, col3 = st.columns(3)
+        
+        with col1:
+            st.metric("Total Patients", len(sample_df))
+            st.metric("Mean Total Delay", f"{sample_df['Total_Delay'].mean():.1f} days")
+            st.metric("Median Total Delay", f"{sample_df['Total_Delay'].median():.1f} days")
+        
+        with col2:
+            st.metric("Mean Patient Delay", f"{sample_df['Patient_Delay'].mean():.1f} days")
+            st.metric("Mean Provider Delay", f"{sample_df['Healthcare_Provider_Related_Delay'].mean():.1f} days")
+            st.metric("Mean Treatment Delay", f"{sample_df['Treatment_Delay'].mean():.1f} days")
+        
+        with col3:
+            male_count = len(sample_df[sample_df['Gender'] == 'Male'])
+            female_count = len(sample_df[sample_df['Gender'] == 'Female'])
+            st.metric("Male Patients", male_count)
+            st.metric("Female Patients", female_count)
+            pulm_tb = len(sample_df[sample_df['TB_Type'] == 'Pulmonary TB'])
+            st.metric("Pulmonary TB", pulm_tb)
+        
+        # Delay Distribution
+        st.write("### Delay Distribution Analysis")
+        
+        fig_hist = px.histogram(
+            sample_df, 
+            x='Total_Delay', 
+            nbins=20,
+            title='Distribution of Total Delays',
+            labels={'Total_Delay': 'Total Delay (days)', 'count': 'Number of Patients'}
+        )
+        st.plotly_chart(fig_hist, use_container_width=True)
+        
+        # Box plot by TB Type
+        fig_box = px.box(
+            sample_df,
+            x='TB_Type',
+            y='Total_Delay',
+            title='Delay Distribution by TB Type'
+        )
+        st.plotly_chart(fig_box, use_container_width=True)
+        
+        # Demographics Analysis
+        st.write("### Demographics Profile")
         
         col1, col2 = st.columns(2)
         
         with col1:
-            # Delay breakdown pie chart
-            fig_pie = px.pie(
-                values=list(delays.values()),
-                names=list(delays.keys()),
-                title="Delay Breakdown (%)",
-                color_discrete_sequence=colors
+            # Age distribution
+            fig_age = px.histogram(
+                sample_df,
+                x='Age',
+                title='Age Distribution',
+                nbins=15
             )
-            st.plotly_chart(fig_pie, use_container_width=True)
+            st.plotly_chart(fig_age, use_container_width=True)
         
         with col2:
-            st.write("**Delay Insights:**")
-            
-            max_delay = max(delays.items(), key=lambda x: x[1])
-            st.write(f"• Longest delay: **{max_delay[0]}** ({max_delay[1]} days)")
-            
-            if data['Delay_Total'] > 30:
-                st.error("⚠️ Total delay exceeds 30 days - requires attention")
-            elif data['Delay_Total'] > 14:
-                st.warning("⚠️ Total delay exceeds 14 days")
-            else:
-                st.success("✅ Total delay within acceptable range")
-            
-            # Delay categorization
-            if data['Delay_Patient'] > data['Delay_Provider']:
-                st.write("• **Patient-side delay** is the primary concern")
-            elif data['Delay_Provider'] > data['Delay_Patient']:
-                st.write("• **Provider-side delay** is the primary concern")
-            else:
-                st.write("• Patient and provider delays are balanced")
-        
-        # NEW: Enhanced Visualizations
-        st.subheader("🔍 Advanced Analytics")
-        
-        # Row 1: eHEALS vs Treatment Delay and Patient Delay Reasons
-        col3, col4 = st.columns(2)
-        
-        with col3:
-            # eHEALS Score vs Treatment Delay
-            fig_eheals = go.Figure()
-            fig_eheals.add_trace(go.Scatter(
-                x=[data['eHEALS_Total_Score']],
-                y=[data['Delay_Treatment']],
-                mode='markers',
-                marker=dict(size=20, color='#FF6B6B'),
-                name='Current Patient',
-                text=[f"Participant {data['Participant_ID']}<br>eHEALS: {data['eHEALS_Total_Score']}<br>Treatment Delay: {data['Delay_Treatment']} days"],
-                hoverinfo='text'
-            ))
-            
-            # Add reference lines
-            fig_eheals.add_hline(y=7, line_dash="dash", line_color="orange", 
-                               annotation_text="WHO recommended max delay (7 days)")
-            fig_eheals.add_vline(x=32, line_dash="dash", line_color="green",
-                               annotation_text="High eHealth Literacy (32+)")
-            
-            fig_eheals.update_layout(
-                title="eHEALS Score vs Treatment Delay",
-                xaxis_title="eHEALS Score (8-40)",
-                yaxis_title="Treatment Delay (Days)",
-                height=400
+            # Education distribution
+            education_counts = sample_df['Education'].value_counts()
+            fig_edu = px.pie(
+                values=education_counts.values,
+                names=education_counts.index,
+                title='Education Distribution'
             )
-            st.plotly_chart(fig_eheals, use_container_width=True)
+            st.plotly_chart(fig_edu, use_container_width=True)
         
-        with col4:
-            # Specific Delay Reasons Analysis
-            specific_reasons = [
-                data['Patient_Delay_Specific_Reason'],
-                data['Provider_Delay_Specific_Reason'], 
-                data['Treatment_Delay_Specific_Reason']
-            ]
-            
-            if any(specific_reasons):
-                # Create a bar chart showing specific delay reasons
-                reason_data = {
-                    'Phase': [],
-                    'Reason': [],
-                    'Days': []
-                }
-                
-                if data['Patient_Delay_Specific_Reason']:
-                    reason_data['Phase'].append('Patient Phase')
-                    reason_data['Reason'].append(data['Patient_Delay_Specific_Reason'])
-                    reason_data['Days'].append(data['Delay_Patient'])
-                
-                if data['Provider_Delay_Specific_Reason']:
-                    reason_data['Phase'].append('Provider Phase')
-                    reason_data['Reason'].append(data['Provider_Delay_Specific_Reason'])
-                    reason_data['Days'].append(data['Delay_Provider'])
-                
-                if data['Treatment_Delay_Specific_Reason']:
-                    reason_data['Phase'].append('Treatment Phase')
-                    reason_data['Reason'].append(data['Treatment_Delay_Specific_Reason'])
-                    reason_data['Days'].append(data['Delay_Treatment'])
-                
-                if reason_data['Phase']:
-                    fig_specific_reasons = px.bar(
-                        x=reason_data['Days'],
-                        y=reason_data['Phase'],
-                        orientation='h',
-                        title="Specific Delay Reasons by Phase",
-                        color=reason_data['Days'],
-                        color_continuous_scale='Reds',
-                        hover_data={'Reason': reason_data['Reason']}
-                    )
-                    fig_specific_reasons.update_layout(
-                        xaxis_title="Days",
-                        yaxis_title="Care Phase",
-                        height=400,
-                        showlegend=False
-                    )
-                    st.plotly_chart(fig_specific_reasons, use_container_width=True)
-                else:
-                    st.info("Complete delay reason analysis in Section 2 to view specific reasons.")
-            else:
-                st.info("No specific delay reasons recorded yet. Please complete Section 2.")
-    
-    else:
-        st.info("📝 Please complete Section 2 (Digital Pathway Mapping) and calculate delays to view visualization.")
+        # eHEALS Score Analysis
+        st.write("### eHealth Literacy Analysis")
         
-        # Show placeholder chart
-        fig = go.Figure()
-        fig.add_trace(go.Bar(
-            y=['Patient Delay', 'Provider Delay', 'Treatment Delay'],
-            x=[0, 0, 0],
-            orientation='h',
-            marker_color=['#FF6B6B', '#4ECDC4', '#45B7D1'],
-            text=['0 days', '0 days', '0 days'],
-            textposition='inside'
-        ))
-        
-        fig.update_layout(
-            title='TB Care Delays Timeline - Awaiting Data',
-            xaxis_title='Days',
-            yaxis_title='Delay Type',
-            showlegend=False,
-            height=300
+        fig_eheals = px.scatter(
+            sample_df,
+            x='Total_Delay',
+            y='eHEALS_Score',
+            color='TB_Type',
+            title='eHEALS Score vs Total Delay',
+            labels={'Total_Delay': 'Total Delay (days)', 'eHEALS_Score': 'eHEALS Score'}
         )
-        
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig_eheals, use_container_width=True)
+    
+
 
 def section_eheals():
     """Section 3: eHealth Literacy Scale (eHEALS) Assessment."""
@@ -830,10 +972,13 @@ def section_verification():
     
     with col2:
         st.write("**Calculated Delays:**")
-        st.write(f"• Patient Delay: {data['Delay_Patient']} days")
-        st.write(f"• Provider Delay: {data['Delay_Provider']} days")
-        st.write(f"• Treatment Delay: {data['Delay_Treatment']} days")
-        st.write(f"• Total Delay: {data['Delay_Total']} days")
+        st.write(f"• Patient Delay: {data['Patient_Delay']} days")
+        st.write(f"• Healthcare Provider-related Delay: {data['Healthcare_Provider_Related_Delay']} days")
+        st.write(f"• Treatment Delay: {data['Treatment_Delay']} days")
+        st.write(f"• Total Delay: {data['Total_Delay']} days")
+        st.write(f"• TB Unit (TU): {data['TB_Unit_TU']} days")
+        st.write(f"• Healthcare Providers: {data['Healthcare_Providers']} days")
+        st.write(f"• No Delay: {data['No_Delay']}")
         
         st.write("**eHEALS Score:**")
         st.write(f"• Formal Scale Score: {data['eHEALS_Total_Score']}/40")
@@ -873,30 +1018,63 @@ def section_verification():
     if missing_fields:
         st.warning(f"⚠️ Please complete the following essential fields before export: {', '.join(missing_fields)}")
     else:
-        if st.button("📊 Generate Export Data", type="primary"):
-            # Create DataFrame for export
-            export_data = create_export_dataframe()
+        if st.button("📊 Export Patient Data", type="primary"):
+            # Get sample data
+            sample_df = generate_sample_data()
+            
+            # Create current patient DataFrame
+            current_patient_df = create_export_dataframe()
+            
+            # Ensure columns match between current patient and sample data
+            # Get common columns that exist in both datasets
+            current_columns = set(current_patient_df.columns)
+            sample_columns = set(sample_df.columns)
+            common_columns = list(current_columns & sample_columns)
+            
+            # Add missing columns to sample data to match current patient structure
+            for col in current_columns:
+                if col not in sample_df.columns:
+                    if col in ['Verification_Notes', 'Data_Verified']:
+                        sample_df[col] = ['' if col == 'Verification_Notes' else False] * len(sample_df)
+                    else:
+                        sample_df[col] = [''] * len(sample_df)
+            
+            # Add missing columns to current patient data to match sample structure
+            for col in sample_columns:
+                if col not in current_patient_df.columns:
+                    current_patient_df[col] = ['']
+            
+            # Align column order - use current patient column order as primary
+            final_columns = list(current_patient_df.columns)
+            
+            # Reorder both DataFrames to have same column order
+            current_patient_aligned = current_patient_df[final_columns]
+            sample_df_aligned = sample_df[final_columns]
+            
+            # Combine the datasets - current patient first, then sample data
+            combined_df = pd.concat([current_patient_aligned, sample_df_aligned], ignore_index=True)
             
             # Display preview
-            st.subheader("📋 Export Preview")
-            st.dataframe(export_data, use_container_width=True)
+            st.subheader(f"📋 Combined Dataset Export Preview ({len(combined_df)} Patients)")
+            st.write(f"**Includes:** Current patient + {len(sample_df)} sample patients")
+            st.dataframe(combined_df, use_container_width=True)
             
             # Generate CSV for download
-            csv_data = export_data.to_csv(index=False)
+            csv_data = combined_df.to_csv(index=False)
             
             # Create filename
             participant_id = data['Participant_ID'] if data['Participant_ID'] else 'UNKNOWN'
-            filename = f"data_{participant_id}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv"
+            filename = f"tb_study_combined_data_{participant_id}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv"
             
             st.download_button(
-                label="💾 Download Data (CSV)",
+                label="💾 Download Combined Dataset (CSV)",
                 data=csv_data,
                 file_name=filename,
                 mime="text/csv",
-                help="Download the complete participant data as CSV file"
+                help="Download current patient data combined with sample patients"
             )
             
-            st.success("✅ Data export ready! Click the download button above to save the file.")
+            st.success(f"✅ Combined dataset ready with {len(combined_df)} patients!")
 
 def create_export_dataframe():
     """Create a comprehensive DataFrame for data export."""
@@ -931,10 +1109,13 @@ def create_export_dataframe():
         'Date_Treatment_Start': [data['Date_Treatment_Start']],
         
         # Calculated delays
-        'Delay_Patient': [data['Delay_Patient']],
-        'Delay_Provider': [data['Delay_Provider']],
-        'Delay_Treatment': [data['Delay_Treatment']],
-        'Delay_Total': [data['Delay_Total']],
+        'Patient_Delay': [data['Patient_Delay']],
+        'Healthcare_Provider_Related_Delay': [data['Healthcare_Provider_Related_Delay']],
+        'Treatment_Delay': [data['Treatment_Delay']],
+        'Total_Delay': [data['Total_Delay']],
+        'TB_Unit_TU': [data['TB_Unit_TU']],
+        'Healthcare_Providers': [data['Healthcare_Providers']],
+        'No_Delay': [data['No_Delay']],
         
         # Specific delay reasons for each gap
         'Patient_Delay_Specific_Reason': [data['Patient_Delay_Specific_Reason']],
@@ -998,35 +1179,9 @@ def main():
         ("✅ Verification & Export", section_verification)
     ]
     
-    # Navigation buttons
-    col_nav1, col_nav2, col_nav3, col_nav4 = st.columns([1, 1, 2, 1])
-    
-    with col_nav1:
-        if st.button("⬅️ Previous", disabled=(st.session_state.current_section == 0)):
-            st.session_state.current_section = max(0, st.session_state.current_section - 1)
-            st.rerun()
-    
-    with col_nav2:
-        if st.button("➡️ Next", disabled=(st.session_state.current_section == len(sections) - 1)):
-            st.session_state.current_section = min(len(sections) - 1, st.session_state.current_section + 1)
-            st.rerun()
-    
-    with col_nav3:
-        # Progress indicator
-        current_section_name = sections[st.session_state.current_section][0]
-        st.write(f"**Section {st.session_state.current_section + 1}/{len(sections)}:** {current_section_name}")
-    
-    with col_nav4:
-        section_select = st.selectbox(
-            "Jump to:",
-            range(len(sections)),
-            format_func=lambda x: f"{x+1}. {sections[x][0].split(' ', 1)[1]}",
-            index=st.session_state.current_section,
-            key="section_jump"
-        )
-        if section_select != st.session_state.current_section:
-            st.session_state.current_section = section_select
-            st.rerun()
+    # Current section indicator
+    current_section_name = sections[st.session_state.current_section][0]
+    st.write(f"**Section {st.session_state.current_section + 1}/{len(sections)}:** {current_section_name}")
     
     st.markdown("---")
     
@@ -1053,7 +1208,7 @@ def main():
     progress_items = [
         ("Demographics", bool(st.session_state.participant_data['Participant_ID'])),
         ("Dates", bool(st.session_state.participant_data['Date_Symptom_Onset'])),
-        ("Delays", st.session_state.participant_data['Delay_Total'] > 0),
+        ("Delays", st.session_state.participant_data['Total_Delay'] > 0),
         ("eHEALS", st.session_state.participant_data['eHEALS_Total_Score'] > 24),
         ("Verified", st.session_state.participant_data['Data_Verified'])
     ]
@@ -1065,6 +1220,20 @@ def main():
     # Display current section
     current_section_func = sections[st.session_state.current_section][1]
     current_section_func()
+    
+    # Navigation buttons at bottom
+    st.markdown("---")
+    col_nav1, col_nav2, col_nav3 = st.columns([1, 1, 4])
+    
+    with col_nav1:
+        if st.button("⬅️ Previous", disabled=(st.session_state.current_section == 0)):
+            st.session_state.current_section = max(0, st.session_state.current_section - 1)
+            st.rerun()
+    
+    with col_nav2:
+        if st.button("➡️ Next", disabled=(st.session_state.current_section == len(sections) - 1)):
+            st.session_state.current_section = min(len(sections) - 1, st.session_state.current_section + 1)
+            st.rerun()
     
     # Footer
     st.markdown("---")

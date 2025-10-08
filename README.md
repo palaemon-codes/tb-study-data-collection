@@ -1,43 +1,80 @@
 # TB Study Data Collection Application
 
-A comprehensive Streamlit web application for cross-sectional TB study data collection in Chennai, featuring digital pathway mapping and eHealth literacy assessment.
+## 🆕 **UPDATED VERSION** - Enhanced Analytics & Visualization Platform
 
-## 🏥 Features
+A comprehensive Streamlit web application for cross-sectional TB study data collection in Chennai, featuring digital pathway mapping, advanced data analytics, and eHealth literacy assessment with fabricated sample data for demonstration.
 
-### 📋 Section 1: Demographics & Clinical Information
-- Complete demographic data collection
-- TB type classification
-- Symptom assessment
-- Clinical history and comorbidities
-- **Delay reason assessment** with specific causes
+## 🏥 New Features & Enhancements
 
-### 📅 Section 2: Digital Pathway Mapping
-- Critical timeline events tracking:
-  - Date of symptom onset
-  - Date of first healthcare visit
-  - Date of TB diagnosis confirmation
-  - Date of treatment initiation
-- **Automatic delay calculations** (Patient, Provider, Treatment, Total)
-- Date validation with chronological sequence checking
+### 🎯 **Updated Delay Criteria Structure**
+Completely restructured delay calculations to match clinical requirements:
+- **Patient Delay**: Symptom onset → First healthcare visit
+- **Healthcare Provider-related Delay**: First visit → Diagnosis confirmation  
+- **Treatment Delay**: Diagnosis → Treatment start
+- **Total Delay**: Complete symptom onset → Treatment timeline
+- **TB Unit (TU)**: TB Unit-specific processing delays
+- **Healthcare Providers**: Provider-related processing delays
+- **No Delay**: Boolean flag for zero-delay cases
 
-### 📊 Section 3: Advanced Data Visualization
-- **Horizontal bar chart** showing delay magnitudes
-- **eHEALS Score vs Treatment Delay** correlation analysis
-- **Patient delay reasons** frequency analysis
-- WHO benchmark comparisons (7-day targets)
-- Real-time delay insights and categorization
+### � **Section 1: Streamlined Demographics** *(UPDATED)*
+- **Removed excessive clinical details** for focus on core demographics
+- Essential patient information: ID, age, gender, TB type
+- Socio-economic profiling: education, occupation, income, residence
+- **Simplified workflow** for faster data entry
 
-### 💻 Section 4: eHealth Literacy Scale (eHEALS)
+### 📅 **Section 2: Enhanced Digital Pathway Mapping** *(UPDATED)*
+- **Specific delay reason analysis** for each phase:
+  - Patient delay reasons (financial, awareness, stigma, etc.)
+  - Provider delay reasons (diagnostic delays, misdiagnosis, etc.)
+  - Treatment delay reasons (drug availability, counseling, etc.)
+- **Improved date validation** with logical sequence checking
+- **Real-time delay calculation** as dates are entered
+
+### 📊 **Section 4: Advanced Data Visualization & Analytics** *(NEW MAJOR UPDATE)*
+
+#### 🔹 **Multi-Tab Interface**:
+1. **Current Patient Analysis**: Individual delay breakdown and insights
+2. **Gantt Chart Visualization**: Timeline view similar to clinical workflow charts
+3. **Data Analytics Dashboard**: Population-level statistics and insights  
+4. **Sample Dataset Viewer**: 30 fabricated patients for demonstration
+
+#### 🔹 **Gantt Chart Features**:
+- **Visual timeline representation** of patient care phases
+- **Color-coded by TB type** and care stage (Pre-visit, Diagnosis, Pre-treatment)
+- **Interactive timeline** showing 8 representative patients
+- **Clinical workflow visualization** matching provided reference image
+
+#### 🔹 **Data Analytics Dashboard**:
+- **Descriptive Statistics**: Mean, median delays across population
+- **Demographics Profiling**: Age distribution, education levels, gender breakdown
+- **Delay Distribution Analysis**: Histograms and box plots
+- **TB Type Comparisons**: Delay patterns by TB classification
+- **eHealth Literacy Correlation**: Digital literacy vs treatment delays
+
+### 💻 **Section 3: eHealth Literacy Scale (eHEALS)** *(UNCHANGED)*
 - Complete 10-question eHEALS assessment
 - Proper 5-point Likert scale implementation
 - Automatic scoring and literacy level classification
-- Separate handling of supplementary vs formal scale questions
 
-### ✅ Section 5: Verification & Export
-- Data verification against medical records
-- Field worker notes and observations
-- **Complete CSV export** with all calculated values
-- Dynamic filename generation with timestamps
+### ✅ **Section 5: Enhanced Verification & Export** *(MAJOR UPDATE)*
+
+#### 🔹 **Patient Details View**:
+- **Complete current patient summary** with all calculated delays
+- **Updated delay criteria display** (Patient, Provider-related, Treatment, Total, TB Unit, Healthcare Providers, No Delay)
+- **eHEALS score interpretation** with literacy level
+
+#### 🔹 **Advanced Export Options**:
+1. **Current Patient Export**: Individual patient data with complete timeline
+2. **Combined Dataset Export**: Current patient + 30 sample patients (31 total)
+3. **Sample Dataset Export**: 30 fabricated patients for demo/training
+
+### 🎯 **Fabricated Sample Dataset** *(NEW)*
+- **30 realistic patient profiles** with varied demographics
+- **Complete timeline data** for all critical events
+- **Diverse delay patterns** and specific reasons
+- **eHEALS score variations** across literacy levels
+- **TB type diversity** (Pulmonary, Extra-pulmonary)
+- **Realistic date ranges** and delay distributions
 
 ## 🚀 Key Improvements
 
