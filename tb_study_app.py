@@ -807,10 +807,10 @@ def section_visualization():
         fig_eheals = px.scatter(
             sample_df,
             x='Total_Delay',
-            y='eHEALS_Score',
+            y='eHEALS_Total_Score',
             color='TB_Type',
             title='eHEALS Score vs Total Delay',
-            labels={'Total_Delay': 'Total Delay (days)', 'eHEALS_Score': 'eHEALS Score'}
+            labels={'Total_Delay': 'Total Delay (days)', 'eHEALS_Total_Score': 'eHEALS Score'}
         )
         st.plotly_chart(fig_eheals, use_container_width=True)
     
