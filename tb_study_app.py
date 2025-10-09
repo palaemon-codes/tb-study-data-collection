@@ -7,7 +7,7 @@ This application implements:
 - ICMR questionnaire for TB patients
 - Digital pathway mapping with delay calculations
 - Real-time visualization of delays
-- eHealth Literacy Scale (eHEALS) assessment
+- Digital Health Literacy Instrument (DHLI) assessment
 - Data verification and export functionality
 
 Author: Digital TB Study Team
@@ -93,18 +93,18 @@ def initialize_session_state():
             'Family_History_Year': '',
             'Additional_Support_Needed': [],
             
-            # eHEALS Questions (Q1-Q10)
-            'eHEALS_Q1': 3,
-            'eHEALS_Q2': 3,
-            'eHEALS_Q3': 3,
-            'eHEALS_Q4': 3,
-            'eHEALS_Q5': 3,
-            'eHEALS_Q6': 3,
-            'eHEALS_Q7': 3,
-            'eHEALS_Q8': 3,
-            'eHEALS_Q9': 3,
-            'eHEALS_Q10': 3,
-            'eHEALS_Total_Score': 24,
+            # DHLI Assessment (Digital Health Literacy Instrument) - 10 Items
+            'DHLI_Q1': 0,
+            'DHLI_Q2': 0,
+            'DHLI_Q3': 0,
+            'DHLI_Q4': 0,
+            'DHLI_Q5': 0,
+            'DHLI_Q6': 0,
+            'DHLI_Q7': 0,
+            'DHLI_Q8': 0,
+            'DHLI_Q9': 0,
+            'DHLI_Q10': 0,
+            'DHLI_Total_Score': 0,
             
             # Verification
             'Data_Verified': False,
@@ -280,26 +280,26 @@ def generate_sample_data():
             'Family_History_Year': '',
             'Additional_Support_Needed': '',
             
-            # eHEALS Assessment
-            'eHEALS_Q1': random.randint(1, 5),
-            'eHEALS_Q2': random.randint(1, 5),
-            'eHEALS_Q3': random.randint(1, 5),
-            'eHEALS_Q4': random.randint(1, 5),
-            'eHEALS_Q5': random.randint(1, 5),
-            'eHEALS_Q6': random.randint(1, 5),
-            'eHEALS_Q7': random.randint(1, 5),
-            'eHEALS_Q8': random.randint(1, 5),
-            'eHEALS_Q9': random.randint(1, 5),
-            'eHEALS_Q10': random.randint(1, 5),
-            'eHEALS_Total_Score': 0,  # Will be calculated
+            # DHLI Assessment (Digital Health Literacy)
+            'DHLI_Q1': random.randint(0, 1),
+            'DHLI_Q2': random.randint(0, 1),
+            'DHLI_Q3': random.randint(0, 1),
+            'DHLI_Q4': random.randint(0, 1),
+            'DHLI_Q5': random.randint(0, 1),
+            'DHLI_Q6': random.randint(0, 1),
+            'DHLI_Q7': random.randint(0, 1),
+            'DHLI_Q8': random.randint(0, 1),
+            'DHLI_Q9': random.randint(0, 1),
+            'DHLI_Q10': random.randint(0, 1),
+            'DHLI_Total_Score': 0,  # Will be calculated
             
             # Verification
             'Data_Verified': random.choice([True, False]),
             'Verification_Notes': f'Sample patient {i+1} - fabricated data for demo'
         }
         
-        # Calculate eHEALS total score
-        patient['eHEALS_Total_Score'] = sum([patient[f'eHEALS_Q{j}'] for j in range(3, 11)])
+        # Calculate DHLI total score
+        patient['DHLI_Total_Score'] = sum([patient[f'DHLI_Q{j}'] for j in range(1, 11)])
         
 
         
@@ -801,146 +801,197 @@ def section_visualization():
             )
             st.plotly_chart(fig_edu, use_container_width=True)
         
-        # eHEALS Score Analysis
-        st.write("### eHealth Literacy Analysis")
+        # DHLI Score Analysis
+        st.write("### Digital Health Literacy Analysis")
         
-        fig_eheals = px.scatter(
+        fig_dhli = px.scatter(
             sample_df,
             x='Total_Delay',
-            y='eHEALS_Total_Score',
+            y='DHLI_Total_Score',
             color='TB_Type',
-            title='eHEALS Score vs Total Delay',
-            labels={'Total_Delay': 'Total Delay (days)', 'eHEALS_Total_Score': 'eHEALS Score'}
+            title='DHLI Score vs Total Delay',
+            labels={'Total_Delay': 'Total Delay (days)', 'DHLI_Total_Score': 'DHLI Score'}
         )
-        st.plotly_chart(fig_eheals, use_container_width=True)
+        st.plotly_chart(fig_dhli, use_container_width=True)
     
 
 
-def section_eheals():
-    """Section 3: eHealth Literacy Scale (eHEALS) Assessment."""
-    st.header("💻 Section 3: eHealth Literacy Scale (eHEALS)")
+def section_dhli():
+    """Section 3: Digital Health Literacy Instrument (DHLI) Assessment."""
+    st.header(" Section 3: Digital Health Literacy Assessment (DHLI)")
     
     st.write("""
-    **Instructions:** For each statement, please select the response that best reflects your opinion and experience with using the Internet for health information.
+    **Instructions (வழிமுறைகள்):** This assessment evaluates your ability to use digital tools for health information. 
+    Please answer honestly based on your experience with mobile phones and digital health services.
+    
+    
+    *இந்த மதிப்பீடு சுகாதார தகவல்களுக்கான டிஜிட்டல் கருவிகளைப் பயன்படுத்தும் உங்கள் திறனை மதிப்பிடுகிறது।*
     """)
     
-    # eHEALS Questions (Questions 1-2 are supplementary, 3-10 are the formal scale)
-    eheals_questions = {
-        'eHEALS_Q1': "How useful do you feel the Internet is in helping you in making decisions about your health?",
-        'eHEALS_Q2': "How important is it for you to be able to access health resources on the Internet?",
-        'eHEALS_Q3': "I know what health resources are available on the Internet",
-        'eHEALS_Q4': "I know where to find helpful health resources on the Internet",
-        'eHEALS_Q5': "I know how to find helpful health resources on the Internet",
-        'eHEALS_Q6': "I know how to use the Internet to answer my questions about health",
-        'eHEALS_Q7': "I know how to use the health information I find on the Internet to help me",
-        'eHEALS_Q8': "I have the skills I need to evaluate the health resources I find on the Internet",
-        'eHEALS_Q9': "I can tell high quality health resources from low quality health resources on the Internet",
-        'eHEALS_Q10': "I feel confident in using information from the Internet to make health decisions"
+    # DHLI Questions (10-item simplified version for oral administration)
+    dhli_questions = {
+        'DHLI_Q1': {
+            'english': "Do you have access to a mobile phone for health info?",
+            'tamil': "உங்கள் மொபைல் போனில் சுகாதார தகவல்களைப் பெற முடியுமா?",
+            'options': ['No (இல்லை)', 'Yes (ஆம்)']
+        },
+        'DHLI_Q2': {
+            'english': "Can you use a phone to call for medical advice?",
+            'tamil': "மருத்துவ ஆலோசனைக்காக போன் செய்ய முடியுமா?",
+            'options': ['No (இல்லை)', 'Yes (ஆம்)']
+        },
+        'DHLI_Q3': {
+            'english': "Do you know how to send/receive SMS health messages?",
+            'tamil': "SMS சுகாதார செய்திகளை அனுப்ப/பெற முடியுமா?",
+            'options': ['Disagree (ஒப்புக்கொள்ளவில்லை)', 'Agree (ஒப்புக்கொள்கிறேன்)']
+        },
+        'DHLI_Q4': {
+            'english': "Can you find health info using voice calls or simple apps?",
+            'tamil': "குரல் அழைப்பு அல்லது எளிய ஆப் மூலம் சுகாதார தகவலைத் தேட முடியுமா?",
+            'options': ['No (இல்லை)', 'Yes (ஆம்)']
+        },
+        'DHLI_Q5': {
+            'english': "Do you check if phone/online health info is reliable?",
+            'tamil': "போன்/ஆன்லைன் சுகாதார தகவல் நம்பகமானதா என சரிபார்க்கிறீர்களா?",
+            'options': ['Disagree (ஒப்புக்கொள்ளவில்லை)', 'Agree (ஒப்புக்கொள்கிறேன்)']
+        },
+        'DHLI_Q6': {
+            'english': "Can you understand health videos/audio on phone?",
+            'tamil': "போனில் சுகாதார வீடியோ/ஆடியோவைப் புரிந்து கொள்ள முடியுமா?",
+            'options': ['No (இல்லை)', 'Yes (ஆம்)']
+        },
+        'DHLI_Q7': {
+            'english': "Do you use digital tools (e.g., SMS) to remember appointments?",
+            'tamil': "appointment-களை நினைவூட்ட எஸ்எம்எஸ் போன்ற டிஜிட்டல் கருவிகளைப் பயன்படுத்துகிறீர்களா?",
+            'options': ['No (இல்லை)', 'Yes (ஆம்)']
+        },
+        'DHLI_Q8': {
+            'english': "Can you share health info with family via phone?",
+            'tamil': "குடும்பத்துடன் சுகாதார தகவலை போன் மூலம் பகிர முடியுமா?",
+            'options': ['Disagree (ஒப்புக்கொள்ளவில்லை)', 'Agree (ஒப்புக்கொள்கிறேன்)']
+        },
+        'DHLI_Q9': {
+            'english': "Do you face problems using digital health services due to language/tech barriers?",
+            'tamil': "மொழி/டெக் காரணமாக டிஜிட்டல் சுகாதார சேவைகளில் சிக்கல்கள் உண்டா?",
+            'options': ['No (இல்லை)', 'Yes (ஆம்)'],
+            'reverse_score': True
+        },
+        'DHLI_Q10': {
+            'english': "Would you use phone-based TB reminders if available?",
+            'tamil': "கிடைக்குமானால் போன் அடிப்படையிலான டிபி நினைவூட்டிகளைப் பயன்படுத்துவீர்களா?",
+            'options': ['No (இல்லை)', 'Yes (ஆம்)']
+        }
     }
     
-    # Different response scales for different questions
-    scale_1_2 = {
-        1: "Not useful/important at all",
-        2: "Not useful/important",
-        3: "Unsure",
-        4: "Useful/Important",
-        5: "Very useful/important"
-    }
+    st.subheader("📋 DHLI Questions (டிஜிட்டல் சுகாதார)")
+    st.write("*Please select your response for each question. Score: Yes/Agree = 1, No/Disagree = 0*")
     
-    scale_3_10 = {
-        1: "Strongly Disagree",
-        2: "Disagree",
-        3: "Undecided",
-        4: "Agree",
-        5: "Strongly Agree"
-    }
-    
-    st.subheader("📋 eHEALS Questions")
-    
-    # Questions 1-2 (Supplementary)
-    st.write("**Supplementary Questions:**")
-    
-    for q_num in [1, 2]:
-        q_key = f'eHEALS_Q{q_num}'
-        col1, col2 = st.columns([3, 1])
+    # Display questions
+    for q_num in range(1, 11):
+        q_key = f'DHLI_Q{q_num}'
+        question_data = dhli_questions[q_key]
+        
+        col1, col2 = st.columns([4, 1])
         
         with col1:
-            st.write(f"**Q{q_num}.** {eheals_questions[q_key]}")
-            st.session_state.participant_data[q_key] = st.radio(
+            st.write(f"**Q{q_num}.** {question_data['english']}")
+            st.write(f"*{question_data['tamil']}*")
+            
+            # Radio button for response
+            response = st.radio(
                 f"Response Q{q_num}",
-                options=[1, 2, 3, 4, 5],
-                format_func=lambda x: f"{x} - {scale_1_2[x]}",
-                index=st.session_state.participant_data[q_key] - 1,
+                options=[0, 1],
+                format_func=lambda x: question_data['options'][x],
+                index=st.session_state.participant_data[q_key],
                 key=f"radio_{q_key}",
                 label_visibility="collapsed"
             )
+            
+            # Handle reverse scoring for Q9
+            if question_data.get('reverse_score', False):
+                st.session_state.participant_data[q_key] = 1 - response  # Reverse score
+                st.caption("*Note: This question is reverse-scored (No = 1, Yes = 0)*")
+            else:
+                st.session_state.participant_data[q_key] = response
         
         with col2:
-            st.metric(f"Q{q_num} Score", st.session_state.participant_data[q_key])
-    
-    st.divider()
-    
-    # Questions 3-10 (Formal eHEALS Scale)
-    st.write("**Formal eHEALS Scale (Questions 3-10):**")
-    
-    for q_num in range(3, 11):
-        q_key = f'eHEALS_Q{q_num}'
-        col1, col2 = st.columns([3, 1])
+            actual_score = st.session_state.participant_data[q_key]
+            st.metric(f"Q{q_num} Score", actual_score)
         
-        with col1:
-            st.write(f"**Q{q_num}.** {eheals_questions[q_key]}")
-            st.session_state.participant_data[q_key] = st.radio(
-                f"Response Q{q_num}",
-                options=[1, 2, 3, 4, 5],
-                format_func=lambda x: f"{x} - {scale_3_10[x]}",
-                index=st.session_state.participant_data[q_key] - 1,
-                key=f"radio_{q_key}",
-                label_visibility="collapsed"
-            )
-        
-        with col2:
-            st.metric(f"Q{q_num} Score", st.session_state.participant_data[q_key])
+        st.divider()
     
-    # Calculate total eHEALS score (formal scale questions 3-10)
-    formal_scale_score = sum([st.session_state.participant_data[f'eHEALS_Q{i}'] for i in range(3, 11)])
-    st.session_state.participant_data['eHEALS_Total_Score'] = formal_scale_score
+    # Calculate total DHLI score
+    total_score = sum([st.session_state.participant_data[f'DHLI_Q{i}'] for i in range(1, 11)])
+    st.session_state.participant_data['DHLI_Total_Score'] = total_score
     
-    st.subheader("📊 eHEALS Score Summary")
+    st.subheader("📊 Digital Health Literacy Score Summary")
     
     col1, col2, col3 = st.columns(3)
     
     with col1:
-        all_questions_score = sum([st.session_state.participant_data[f'eHEALS_Q{i}'] for i in range(1, 11)])
         st.metric(
-            "Total Score (All Questions)",
-            f"{all_questions_score}/50",
-            help="Sum of all 10 questions (Q1-Q10)"
+            "Total DHLI Score",
+            f"{total_score}/10",
+            help="Sum of all 10 DHLI questions (0-10 scale)"
         )
     
     with col2:
+        # DHLI interpretation based on score
+        if total_score >= 7:
+            level = "High"
+            color = "🟢"
+        elif total_score >= 4:
+            level = "Moderate" 
+            color = "🟡"
+        else:
+            level = "Low"
+            color = "🔴"
+        
         st.metric(
-            "Formal eHEALS Score",
-            f"{formal_scale_score}/40",
-            help="Sum of formal scale questions (Q3-Q10)"
+            "Digital Health Literacy Level",
+            f"{color} {level}",
+            help=f"Based on DHLI score: {total_score}/10. ≤6 indicates low digital health literacy"
         )
     
     with col3:
-        # eHEALS interpretation
-        if formal_scale_score >= 32:
-            level = "High"
-            color = "green"
-        elif formal_scale_score >= 24:
-            level = "Moderate"
-            color = "orange"
+        # Clinical interpretation for TB care
+        if total_score <= 6:
+            interpretation = "May need extra support with digital TB care tools"
+            delta = "⚠️ Low literacy flagged"
         else:
-            level = "Low"
-            color = "red"
+            interpretation = "Can likely use digital TB care tools effectively"
+            delta = "✅ Adequate literacy"
         
         st.metric(
-            "eHealth Literacy Level",
-            level,
-            help=f"Based on formal eHEALS score: {formal_scale_score}/40"
+            "Clinical Interpretation",
+            interpretation[:20] + "..." if len(interpretation) > 20 else interpretation,
+            delta=delta,
+            help=f"Full interpretation: {interpretation}"
         )
+    
+    # Additional information box
+    st.info("""
+    **DHLI Scoring & Interpretation:**
+    - **Score 0-6**: Low digital health literacy - may experience 1.5-2x longer patient delays
+    - **Score 7-10**: Adequate digital health literacy - can effectively use digital health tools
+    - **Clinical relevance**: Low scores correlate with treatment delays and may require additional support for digital TB care interventions
+    """)
+    
+    # Display individual question breakdown
+    with st.expander("📈 View Individual Question Scores"):
+        score_data = []
+        for i in range(1, 11):
+            q_key = f'DHLI_Q{i}'
+            score_data.append({
+                'Question': f'Q{i}',
+                'English': dhli_questions[q_key]['english'][:50] + "...",
+                'Score': st.session_state.participant_data[q_key],
+                'Response': dhli_questions[q_key]['options'][st.session_state.participant_data[q_key]]
+            })
+        
+        import pandas as pd
+        df_scores = pd.DataFrame(score_data)
+        st.dataframe(df_scores, use_container_width=True)
 
 def section_verification():
     """Section 5: Data Verification and Export."""
@@ -980,17 +1031,17 @@ def section_verification():
         st.write(f"• Healthcare Providers: {data['Healthcare_Providers']} days")
         st.write(f"• No Delay: {data['No_Delay']}")
         
-        st.write("**eHEALS Score:**")
-        st.write(f"• Formal Scale Score: {data['eHEALS_Total_Score']}/40")
+        st.write("**DHLI Score:**")
+        st.write(f"• Total Score: {data['DHLI_Total_Score']}/10")
         
-        # eHEALS level
-        if data['eHEALS_Total_Score'] >= 32:
+        # DHLI level
+        if data['DHLI_Total_Score'] >= 7:
             level = "High"
-        elif data['eHEALS_Total_Score'] >= 24:
+        elif data['DHLI_Total_Score'] >= 4:
             level = "Moderate"
         else:
             level = "Low"
-        st.write(f"• eHealth Literacy Level: {level}")
+        st.write(f"• Digital Health Literacy Level: {level}")
     
     st.subheader("🔍 Verification")
     
@@ -1140,18 +1191,18 @@ def create_export_dataframe():
         'Family_History_Year': [data['Family_History_Year']],
         'Additional_Support_Needed': ['; '.join(data['Additional_Support_Needed'])],
         
-        # eHEALS scores (individual questions)
-        'eHEALS_Q1': [data['eHEALS_Q1']],
-        'eHEALS_Q2': [data['eHEALS_Q2']],
-        'eHEALS_Q3': [data['eHEALS_Q3']],
-        'eHEALS_Q4': [data['eHEALS_Q4']],
-        'eHEALS_Q5': [data['eHEALS_Q5']],
-        'eHEALS_Q6': [data['eHEALS_Q6']],
-        'eHEALS_Q7': [data['eHEALS_Q7']],
-        'eHEALS_Q8': [data['eHEALS_Q8']],
-        'eHEALS_Q9': [data['eHEALS_Q9']],
-        'eHEALS_Q10': [data['eHEALS_Q10']],
-        'eHEALS_Total_Score': [data['eHEALS_Total_Score']],
+        # DHLI scores (individual questions)
+        'DHLI_Q1': [data['DHLI_Q1']],
+        'DHLI_Q2': [data['DHLI_Q2']],
+        'DHLI_Q3': [data['DHLI_Q3']],
+        'DHLI_Q4': [data['DHLI_Q4']],
+        'DHLI_Q5': [data['DHLI_Q5']],
+        'DHLI_Q6': [data['DHLI_Q6']],
+        'DHLI_Q7': [data['DHLI_Q7']],
+        'DHLI_Q8': [data['DHLI_Q8']],
+        'DHLI_Q9': [data['DHLI_Q9']],
+        'DHLI_Q10': [data['DHLI_Q10']],
+        'DHLI_Total_Score': [data['DHLI_Total_Score']],
         
         # Verification
         'Data_Verified': [data['Data_Verified']],
@@ -1174,7 +1225,7 @@ def main():
     sections = [
         ("📋 Demographics & Clinical Info", section_demographics),
         ("📅 Digital Pathway Mapping", section_digital_pathway),
-        ("� eHEALS Assessment", section_eheals),
+        ("📱 DHLI Assessment", section_dhli),
         ("� Data Visualization", section_visualization),
         ("✅ Verification & Export", section_verification)
     ]
@@ -1209,7 +1260,7 @@ def main():
         ("Demographics", bool(st.session_state.participant_data['Participant_ID'])),
         ("Dates", bool(st.session_state.participant_data['Date_Symptom_Onset'])),
         ("Delays", st.session_state.participant_data['Total_Delay'] > 0),
-        ("eHEALS", st.session_state.participant_data['eHEALS_Total_Score'] > 24),
+        ("DHLI", st.session_state.participant_data['DHLI_Total_Score'] > 0),
         ("Verified", st.session_state.participant_data['Data_Verified'])
     ]
     
