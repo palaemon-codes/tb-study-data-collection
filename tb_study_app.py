@@ -183,7 +183,7 @@ def generate_sample_data():
     genders = ['Male', 'Female']
     education_levels = ['No formal education', 'Primary school', 'Secondary school', 'Higher secondary', 'Graduate', 'Postgraduate']
     occupations = ['Unemployed', 'Manual laborer', 'Skilled worker', 'Clerical', 'Professional', 'Business', 'Student', 'Homemaker']
-    income_levels = ['< ₹10,000', '₹10,000 - ₹25,000', '₹25,000 - ₹50,000', '₹50,000 - ₹75,000', '> ₹75,000']
+    income_levels = ['< ₹5,942', '₹5,942 - ₹17,815', '₹17,816 - ₹29,722', '₹29,723 - ₹44,569', '₹44,570 - ₹59,416', '₹59,417 - ₹1,18,863', '≥ ₹1,18,864']
     locations = ['Urban', 'Semi-urban', 'Rural']
     tb_types = ['Pulmonary TB', 'Extra-pulmonary TB']
     
@@ -371,9 +371,9 @@ def section_demographics():
         )
         
         st.session_state.participant_data['Monthly_Income'] = st.selectbox(
-            "Monthly Household Income",
-            options=['', '< ₹10,000', '₹10,000 - ₹25,000', '₹25,000 - ₹50,000', '₹50,000 - ₹75,000', '> ₹75,000'],
-            index=['', '< ₹10,000', '₹10,000 - ₹25,000', '₹25,000 - ₹50,000', '₹50,000 - ₹75,000', '> ₹75,000'].index(st.session_state.participant_data['Monthly_Income']) if st.session_state.participant_data['Monthly_Income'] else 0
+            "Monthly Household Income (INR)",
+            options=['', '< ₹5,942', '₹5,942 - ₹17,815', '₹17,816 - ₹29,722', '₹29,723 - ₹44,569', '₹44,570 - ₹59,416', '₹59,417 - ₹1,18,863', '≥ ₹1,18,864'],
+            index=['', '< ₹5,942', '₹5,942 - ₹17,815', '₹17,816 - ₹29,722', '₹29,723 - ₹44,569', '₹44,570 - ₹59,416', '₹59,417 - ₹1,18,863', '≥ ₹1,18,864'].index(st.session_state.participant_data['Monthly_Income']) if st.session_state.participant_data['Monthly_Income'] else 0
         )
     
 
